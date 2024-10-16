@@ -1,0 +1,150 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX_APPOINTMENTS 100
+#define MAX_NAME_LENGTH 50
+#define MAX_PREFERENCES 3
+#define MAX_FEEDBACK_LENGTH 100
+typedef struct {
+    char patientName[MAX_NAME_LENGTH];
+    char preferredTime[MAX_PREFERENCES][10];
+    char feedback[MAX_FEEDBACK_LENGTH];
+} Appointment;
+Appointment appointments[MAX_APPOINTMENTS];
+void bookAppointment();
+void manageAppointments();
+void recordPreferences();
+void generateReport();
+void collectFeedback();
+void clearInputBuffer();
+int main() {
+    int choice;
+    do {
+        printf("\n1. Book Appointment\n");
+        printf("2. Manage Appointments\n");
+        printf("3. Record Patient Preferences\n");
+        printf("4. Generate Reports\n");
+        printf("5. Collect Feedback\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        if (scanf("%d", &choice) != 1) {
+            clearInputBuffer(); // Clear invalid input
+            choice = 0; // Set an invalid choice to trigger the default case
+		}
+        clearInputBuffer(); // Ensure any leftover input is cleared
+        switch(choice) {
+            case 1:
+                bookAppointment();
+                break;
+            case 2:
+                manageAppointments();
+                break;
+            case 3:
+                recordPreferences();
+                break;
+            case 4:
+                generateReport();
+                break;
+            case 5:
+                collectFeedback();
+                break;
+            case 6:
+                printf("Exiting...\n");
+                break;
+            default:
+               printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 6);
+    return 0;
+}
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+void bookAppointment() {
+    static int numAppointments = 0;
+
+    if (numAppointments < MAX_APPOINTMENTS) {
+        printf("Enter patient name: ");
+        fgets(appointments[numAppointments].patientName, MAX_NAME_LENGTH, stdin);
+        appointments[numAppointments].patientName[strcspn(appointments[numAppointments].patientName, "\n")] = 0;
+        printf("Appointment booked successfully.\n");
+        numAppointments++;
+    } else {
+        printf("Maximum appointments reached. Cannot book more.\n");
+	}
+}
+void manageAppointments() {
+    int i;
+    printf("\n--- Existing Appointments ---\n");
+    if (appointments[0].patientName[0] == '\0') {
+        printf("No appointments scheduled.\n");
+    } else {
+        for (i = 0; i < MAX_APPOINTMENTS; i++) {
+            if (appointments[i].patientName[0] != '\0') {
+                printf("Appointment %d: %s\n", i + 1, appointments[i].patientName);
+            }
+        }
+    }
+}
+void recordPreferences() {
+    int i, j, numPreferences;
+    printf("Enter number of preferences (up to %d): ", MAX_PREFERENCES);
+    if (scanf("%d", &numPreferences) != 1) {
+        clearInputBuffer();
+        printf("Invalid input. Preferences not recorded.\n");
+        return;
+    }
+    clearInputBuffer();
+    if (numPreferences > MAX_PREFERENCES) {
+        printf("Number of preferences exceeds the limit.\n");
+        return;
+	}
+    for (i = 0; i < MAX_APPOINTMENTS; i++) {
+        if (appointments[i].patientName[0] != '\0') {
+            printf("Enter preferences for patient %s:\n", appointments[i].patientName);
+            for (j = 0; j < numPreferences; j++) {
+                printf("Preference %d: ", j + 1);
+                fgets(appointments[i].preferredTime[j], 10, stdin);
+                appointments[i].preferredTime[j][strcspn(appointments[i].preferredTime[j], "\n")] = 0;
+            }
+        }
+    }
+    printf("Preferences recorded successfully.\n");
+}
+void generateReport() {
+    int i;
+    printf("\n--- Appointment Report ---\n");
+    for (i = 0; i < MAX_APPOINTMENTS; i++) {
+        if (appointments[i].patientName[0] != '\0') {
+            printf("Appointment %d:\n", i + 1);
+            printf("  Patient Name: %s\n", appointments[i].patientName);
+            for (int j = 0; j < MAX_PREFERENCES; j++) {
+                if (appointments[i].preferredTime[j][0] != '\0') {
+                    printf("  Preferred Time %d: %s\n", j + 1, appointments[i].preferredTime[j]);
+                }
+            }
+            if (appointments[i].feedback[0] != '\0') {
+                printf("  Feedback: %s\n", appointments[i].feedback);
+            }
+            printf("\n");
+        }
+    }
+}
+void collectFeedback() {
+    int appointmentIndex;
+    printf("Enter the appointment number to provide feedback for (1 to %d): ", MAX_APPOINTMENTS);
+    if (scanf("%d", &appointmentIndex) != 1) {
+        clearInputBuffer();
+        printf("Invalid input. Feedback not recorded.\n");
+        return;
+    }
+    clearInputBuffer();
+    if (appointmentIndex < 1 || appointmentIndex > MAX_APPOINTMENTS || appointments[appointmentIndex - 1].patientName[0] == '\0') {
+        printf("Invalid appointment number. Feedback not recorded.\n");
+        return;
+	}
+    printf("Enter feedback for patient %s: ", appointments[appointmentIndex - 1].patientName);
+    fgets(appointments[appointmentIndex - 1].feedback, MAX_FEEDBACK_LENGTH, stdin);
+    appointments[appointmentIndex - 1].feedback[strcspn(appointments[appointmentIndex - 1].feedback, "\n")] = 0;
+    printf("Feedback recorded successfully.\n");
+}
